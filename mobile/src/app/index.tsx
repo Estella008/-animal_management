@@ -1,4 +1,10 @@
-import AnimalRegister from '../screens/AnimalRegister';
+import { Button, View } from 'react-native';
+import {colors, fonts, size}from "../constants/theme";
+
 export default function Index() {
-  return <AnimalRegister />;
+  return (
+    <View style={{ backgroundColor: colors.background }}>
+      <Button title="Cadastrar animal" color="yellow" onPress={() => alert('Funcionou!')} />
+    </View>
+  );
 }
