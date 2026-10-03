@@ -11,7 +11,8 @@ export type ThemedTextProps = TextProps & {
     | 'subtitle'
     | 'link'
     | 'linkPrimary'
-    | 'code';
+    | 'code'
+    | 'stage';
 
   themeColor?: keyof typeof colors;
 };
@@ -37,6 +38,7 @@ export function ThemedText({
         type === 'link' && styles.link,
         type === 'linkPrimary' && styles.linkPrimary,
         type === 'code' && styles.code,
+        type === 'stage' && styles.stage,
 
         style,
       ]}
@@ -94,4 +96,10 @@ const styles = StyleSheet.create({
     fontSize: size.textXs,
     fontWeight: fonts.bold,
   },
+  stage:{
+    fontSize: size.textXs,
+    fontWeight: fonts.semibold,
+    color: colors.primary,
+  }
+
 });

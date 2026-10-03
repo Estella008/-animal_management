@@ -49,6 +49,7 @@ export const fonts = {
   medium: '500',
   semibold: '600',
   bold: '700',
+ 
 } as const;
 
 export const size = {
@@ -57,6 +58,8 @@ export const size = {
   textMd: 15,
   textLg: 18,
   title: 26,
+  stage: 20,
+  
 
   xs: 4,
   sm: 8,
@@ -67,6 +70,9 @@ export const size = {
   xxxl: 32,
 
   inputHeight: 48,
+  inputPaddingHorizontal: 16,
+  inputPaddingVertical: 12,
+
   buttonHeight: 48,
   choiceHeight: 40,
 
@@ -75,6 +81,9 @@ export const size = {
   radiusLg: 14,
   radiusXl: 18,
   radiusPill: 999,
+
+  marginTopView: 20,
+  
 };
 
 export const Spacing = {
