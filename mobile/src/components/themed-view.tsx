@@ -1,16 +1,12 @@
-import { View, Text, StyleSheet, type ViewProps } from 'react-native';
-
-import { ThemeColor } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
-
+import { View, type ViewProps } from 'react-native';
+ 
+import { Colors, type ThemeColor } from '@/constants/theme';
+ 
 export type ThemedViewProps = ViewProps & {
-  lightColor?: string;
-  darkColor?: string;
   type?: ThemeColor;
 };
-
-export function ThemedView({ style, lightColor, darkColor, type, ...otherProps }: ThemedViewProps) {
-  const theme = useTheme();
-
-  return <View style={[{ backgroundColor: "theme[type ?? 'background']", margin: 20 }, style]} {...otherProps} />;
+ 
+// Corrigido: antes o backgroundColor era uma STRING ("theme[...]") e havia margin: 20 fixa.
+export function ThemedView({ style, type = 'background', ...otherProps }: ThemedViewProps) {
+  return <View style={[{ backgroundColor: Colors.light[type] }, style]} {...otherProps} />;
 }
