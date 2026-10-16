@@ -54,25 +54,69 @@ export default function CadastroPetScreen() {
     setNovaVacina(null);
   }
  
-  function salvar() {
-    if (!nome.trim()) {
-      Alert.alert('Falta o nome', 'Informe o nome do animal para salvar.');
+  
+async function salvar() {
+  if (!nome.trim()) {
+    Alert.alert('Falta o nome', 'Informe o nome do animal.');
+    return;
+  }
+
+  if (!sexo || !porte || castrado === null) {
+    Alert.alert('Campos obrigatórios', 'Preencha sexo, porte e castrado.');
+    return;
+  }
+
+  let dataNascimento = null;
+
+  if (nascimento) {
+    const partes = nascimento.split('/');
+
+    if (partes.length !== 3) {
+      Alert.alert('Data inválida', 'Informe a data no formato dd/mm/aaaa.');
       return;
     }
-    const pet = {
-      nome: nome.trim(),
-      especie,
-      data_nascimento: nascimento,
-      sexo,
-      castrado: castrado === 'sim',
-      porte,
-      peso: peso ? Number(peso.replace(',', '.')) : null,
-      vacinas,
-      observacoes,
-    };
-    console.log('PET PARA ENVIAR À API:', pet); // próximo passo: fetch POST para o Django
-    Alert.alert('Pet salvo!', `${pet.nome} foi cadastrado (por enquanto só no console).`);
+
+    const [dia, mes, ano] = partes;
+    dataNascimento = `${ano}-${mes}-${dia}`;
   }
+
+  const pet = {
+    nome: nome.trim(),
+    especie,
+    data_nascimento: dataNascimento,
+    sexo,
+    castrado: castrado === 'sim',
+    porte,
+    peso: peso ? Number(peso.replace(',', '.')) : null,
+    observacoes,
+  };
+
+  try {
+    const resposta = await fetch(
+      `${process.env.EXPO_PUBLIC_API_URL}/api/animais/cadastrar/`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(pet),
+      }
+    );
+
+    const resultado = await resposta.json();
+
+    if (resposta.ok) {
+      Alert.alert('Sucesso!', `${pet.nome} foi cadastrado no banco de dados!`);
+    } else {
+      console.log('Erro da API:', resultado);
+      Alert.alert('Erro ao cadastrar', JSON.stringify(resultado));
+    }
+  } catch (erro) {
+    console.log('Erro de conexão:', erro);
+    Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+  }
+}
+
  
   return (
     <SafeAreaView style={styles.safe}>
