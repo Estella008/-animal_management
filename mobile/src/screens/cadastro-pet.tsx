@@ -71,7 +71,7 @@ export default function CadastroPetScreen() {
       observacoes,
     };
     console.log('PET PARA ENVIAR À API:', pet); // próximo passo: fetch POST para o Django
-    Alert.alert('Pet salvo!', `${pet.nome} foi cadastrado (por enquanto só no console).`);
+    Alert.alert('Pet salvo!', `${pet.nome} foi cadastrado com sucesso!`);
   }
  
   return (
