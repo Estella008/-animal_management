@@ -1,2 +1,2 @@
 
-export { default } from '@/screens/cadastro-usuario';
+export { default } from '@/screens/home';

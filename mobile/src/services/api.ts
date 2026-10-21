@@ -55,8 +55,11 @@ export async function apiFetch<T = unknown>(
   const data = response.status === 204 ? null : await response.json().catch(() => null);
 
   if (!response.ok) {
-    throw new ApiError(response.status, data);
-  }
+  console.log('Status HTTP:', response.status);
+  console.log('Resposta do backend:', JSON.stringify(data, null, 2));
+
+  throw new ApiError(response.status, data);
+}
 
   return data as T;
 }
