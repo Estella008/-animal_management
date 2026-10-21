@@ -10,6 +10,7 @@ import { PrimaryButton } from '@/components/ui/primary-button';
 import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
 import { maskDate, maskWeight } from '@/utils/masks';
+import { api, ApiError } from '@/services/api';
  
 type Especie = 'cachorro' | 'gato';
 type Sexo = 'macho' | 'femea';
@@ -91,31 +92,34 @@ async function salvar() {
     observacoes,
   };
 
+  
   try {
-    const resposta = await fetch(
-      `${process.env.EXPO_PUBLIC_API_URL}/api/animais/cadastrar/`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(pet),
-      }
+    await api.post('/animais/cadastrar/', pet);
+
+    Alert.alert(
+      'Sucesso!',
+      `${pet.nome} foi cadastrado no banco de dados!`
     );
-
-    const resultado = await resposta.json();
-
-    if (resposta.ok) {
-      Alert.alert('Sucesso!', `${pet.nome} foi cadastrado no banco de dados!`);
-    } else {
-      console.log('Erro da API:', resultado);
-      Alert.alert('Erro ao cadastrar', JSON.stringify(resultado));
-    }
   } catch (erro) {
-    console.log('Erro de conexão:', erro);
-    Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+    console.log('Erro ao cadastrar animal:', erro);
+
+    if (erro instanceof ApiError) {
+      console.log('Detalhes da API:', erro.data);
+
+      Alert.alert(
+        'Erro ao cadastrar',
+        typeof erro.data === 'string'
+          ? erro.data
+          : JSON.stringify(erro.data)
+      );
+    } else {
+      Alert.alert(
+        'Erro',
+        'Não foi possível conectar ao servidor.'
+      );
+    }
   }
-}
+
 
  
   return (
@@ -251,3 +255,4 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: size.md },
   addLink: { marginTop: -size.sm, marginBottom: size.xl },
 });
+}
