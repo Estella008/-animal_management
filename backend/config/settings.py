@@ -140,3 +140,13 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
 }
+
+# settings.py
+from decouple import config
+
+DEBUG = config('DEBUG', cast=bool)
+
+if DEBUG:
+    ALLOWED_HOSTS = ['*']
+else:
+    ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='').split(',')

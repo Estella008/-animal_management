@@ -1,2 +1,2 @@
 
-export { default } from '@/screens/home';
+export { default } from '@/screens/login';
