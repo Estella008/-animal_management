@@ -43,9 +43,11 @@ export async function apiFetch<T = unknown>(
   options: RequestInit = {},
 ): Promise<T> {
   const response = await fetch(`${BASE_URL}${path}`, {
-    ...options,
+    ...options,  
     headers: {
-      'Content-Type': 'application/json',
+      ...(options.body instanceof FormData
+        ? {}
+        : { 'Content-Type': 'application/json' }),
       ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
       ...options.headers,
     },
@@ -67,9 +69,15 @@ export async function apiFetch<T = unknown>(
 /** Atalhos para os métodos mais usados. */
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path),
+
   post: <T>(path: string, body: unknown) =>
     apiFetch<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+
+  postForm: <T>(path: string, body: FormData) =>
+    apiFetch<T>(path, { method: 'POST', body }),
+
   put: <T>(path: string, body: unknown) =>
     apiFetch<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
+  
   delete: <T>(path: string) => apiFetch<T>(path, { method: 'DELETE' }),
 };

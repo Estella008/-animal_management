@@ -11,6 +11,8 @@ import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
 import { maskDate, maskWeight } from '@/utils/masks';
 import { api, ApiError } from '@/services/api';
+
+import * as ImagePicker from 'expo-image-picker';
  
 type Especie = 'cachorro' | 'gato';
 type Sexo = 'macho' | 'femea';
@@ -25,6 +27,9 @@ const VACINAS: Record<Especie, string[]> = {
  
 export default function CadastroPetScreen() {
   const [nome, setNome] = useState('');
+  const [fotoUri, setFotoUri] = useState<string | null>(null);
+  const [fotoSelecionada, setFotoSelecionada] =
+    useState<ImagePicker.ImagePickerAsset | null>(null);
   const [especie, setEspecie] = useState<Especie>('cachorro');
   const [nascimento, setNascimento] = useState('');
   const [sexo, setSexo] = useState<Sexo | null>(null);
@@ -54,7 +59,28 @@ export default function CadastroPetScreen() {
     }
     setNovaVacina(null);
   }
- 
+
+
+async function escolherFoto() {
+  try {
+    const resultado = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!resultado.canceled && resultado.assets.length > 0) {
+      const imagem = resultado.assets[0];
+
+      setFotoUri(imagem.uri);
+      setFotoSelecionada(imagem);
+    }
+    
+  } catch (erro) {
+    console.log('Erro ao selecionar foto:', erro);
+    Alert.alert('Erro', 'Não foi possível selecionar a foto.');
+  }
+}
   
 async function salvar() {
   if (!nome.trim()) {
@@ -92,9 +118,34 @@ async function salvar() {
     observacoes,
   };
 
-  
+
+const formData = new FormData();
+
+Object.entries(pet).forEach(([campo, valor]) => {
+  if (valor !== null && valor !== undefined) {
+    formData.append(campo, String(valor));
+  }
+});
+
+if (fotoSelecionada) {
+  if (Platform.OS === 'web') {
+    if (!fotoSelecionada.file) {
+      Alert.alert('Erro', 'Não foi possível preparar a foto.');
+      return;
+    }
+
+    formData.append('foto', fotoSelecionada.file);
+  } else {
+    formData.append('foto', {
+      uri: fotoSelecionada.uri,
+      name: fotoSelecionada.fileName ?? 'pet.jpg',
+      type: fotoSelecionada.mimeType ?? 'image/jpeg',
+    } as unknown as Blob);
+  }
+}  
+
   try {
-    await api.post('/animais/cadastrar/', pet);
+    await api.postForm('/animais/cadastrar/', formData);
 
     Alert.alert(
       'Sucesso!',
@@ -120,7 +171,7 @@ async function salvar() {
     }
   }
 
-
+}
  
   return (
     <SafeAreaView style={styles.safe}>
@@ -133,7 +184,10 @@ async function salvar() {
             Cadastro do pet
           </ThemedText>
  
-          <PhotoPicker onPress={() => Alert.alert('Em breve', 'Seleção de foto será a próxima etapa.')} />
+          <PhotoPicker
+            uri={fotoUri}
+            onPress={escolherFoto}
+          />
  
           <TextField label="Nome do animal" placeholder="Ex.: Thor" value={nome} onChangeText={setNome} />
  
@@ -255,4 +309,3 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: size.md },
   addLink: { marginTop: -size.sm, marginBottom: size.xl },
 });
-}

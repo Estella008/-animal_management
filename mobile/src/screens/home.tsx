@@ -20,13 +20,34 @@ export default function Index() {
           <View style={styles.plus}>
             <Ionicons name="add" size={16} color="#087F70" />
           </View>
-        </View>
+        </View>        
 
         <ThemedText type="subtitle">
           Cadastrar animal
         </ThemedText>
+
       </Pressable>
+
+      {/* Botão Meus pets */}
+      <Pressable
+        style={styles.card}
+         onPress={() => router.push('/meus-pets')}
+      >
+        <View style={styles.iconContainer}>
+          <Ionicons
+             name="images-outline"
+             size={36}
+             color="#FFFFFF"
+          />
+      </View>
+
+        <ThemedText type="subtitle">
+          Meus pets
+        </ThemedText>
+      </Pressable>
+
     </ThemedView>
+    
   );
 }
 

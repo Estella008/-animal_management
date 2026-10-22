@@ -14,5 +14,6 @@ class AnimalSerializer(serializers.ModelSerializer):
             'castrado',
             'porte',
             'peso',
+            'foto',
             'observacoes',
         ]

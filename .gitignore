@@ -3,3 +3,6 @@ venv/
 __pycache__/
 *.pyc
 node_modules/
+
+# Fotos dos pets armazenadas localmente
+/backend/media/
