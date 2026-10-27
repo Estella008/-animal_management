@@ -11,6 +11,7 @@ import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
 import { maskDate, maskWeight } from '@/utils/masks';
 import { api, ApiError } from '@/services/api';
+import { File } from 'expo-file-system';
 
 import * as ImagePicker from 'expo-image-picker';
  
@@ -127,6 +128,8 @@ Object.entries(pet).forEach(([campo, valor]) => {
   }
 });
 
+
+
 if (fotoSelecionada) {
   if (Platform.OS === 'web') {
     if (!fotoSelecionada.file) {
@@ -136,13 +139,12 @@ if (fotoSelecionada) {
 
     formData.append('foto', fotoSelecionada.file);
   } else {
-    formData.append('foto', {
-      uri: fotoSelecionada.uri,
-      name: fotoSelecionada.fileName ?? 'pet.jpg',
-      type: fotoSelecionada.mimeType ?? 'image/jpeg',
-    } as unknown as Blob);
+    const arquivo = new File(fotoSelecionada.uri);
+    formData.append('foto', arquivo);
   }
-}  
+}
+
+
 
   try {
     await api.postForm('/animais/cadastrar/', formData);

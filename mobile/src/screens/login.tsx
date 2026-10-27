@@ -3,42 +3,73 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    Pressable,
     ScrollView,
     StyleSheet,
     View,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
-import { api, ApiError } from '@/services/api';
+import { api, ApiError, setAuthToken } from '@/services/api';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [carregando, setCarregando] = useState(false);
+    const router = useRouter();
 
-    const handleLogin = async () => {
-        if (!email.trim() || !senha.trim()) {
-            Alert.alert('Atenção', 'Preencha todos os campos.');
-            return;
+    
+   type LoginResponse = {
+    access: string;
+    refresh: string;
+};;
+
+    
+const handleLogin = async () => {
+    if (!email.trim() || !senha) {
+        Alert.alert('Atenção', 'Preencha todos os campos.');
+        return;
+    }
+
+    const postData = {
+        email: email.trim().toLowerCase(),
+        password: senha,
+    };
+
+    try {
+        setCarregando(true);
+
+        const response = await api.post<LoginResponse>(
+            '/usuarios/login/',
+            postData
+        );
+
+        setAuthToken(response.access);
+        router.replace('/home');
+
+    } catch (erro) {
+        if (erro instanceof ApiError && (erro.status === 400 || erro.status === 401)) {
+            Alert.alert('Erro', 'E-mail ou senha incorretos ou conta inativa.');
+        } else {
+            Alert.alert('Erro', 'Não foi possível conectar. Verifique sua internet.');
         }
+    } finally {
+        setCarregando(false);
+    }
+};
 
-        const emailNormalizado = email.trim().toLowerCase();
-
-        try {
-            setCarregando(true);
-            // TODO: chamada à API do Django (ajustar conforme seu services/api)
-            // await api.post('/api/login/', { email: emailNormalizado, senha });
-            console.log('Login:', emailNormalizado);
-        } catch (erro) {
-            Alert.alert('Erro', 'Não foi possível entrar. Tente novamente.');
-        } finally {
-            setCarregando(false);
-        }
-    }; // 👈 faltava fechar aqui
+    const handleForgotPassword = () => {
+        Alert.alert('Esqueci minha senha', 'Funcionalidade ainda não implementada.');
+    }
+    const handleRegister = () => {
+        router.push('/cadastro-usuario');
+    }
+    
 
     return (
         <SafeAreaView style={styles.safe}>
@@ -90,20 +121,36 @@ export default function LoginScreen() {
                                     secureTextEntry
                                 />
                             </View>
+                            <Pressable onPress={handleForgotPassword} hitSlop={8}>
+                                <ThemedText type="default" style={styles.link}>
+                                    Esqueci minha senha
+                                </ThemedText>
+                            </Pressable>
                         </View>
                     </View>
                 </ScrollView>
 
                 <View style={styles.footer}>
                     <PrimaryButton
-                        title={carregando ? 'Entrando...' : 'Entrar'}
-                        onPress={handleLogin}
-                        disabled={carregando}
-                    />
+        title={carregando ? 'Entrando...' : 'Entrar'}
+        onPress={handleLogin}
+        disabled={carregando}
+    />
 
-                    <ThemedText type="default" style={styles.footerNote}>
-                        Seus dados são enviados com segurança para o Helpet.
-                    </ThemedText>
+    <View style={styles.registerRow}>
+        <ThemedText type="default" style={styles.registerText}>
+            Ainda não tem conta?
+        </ThemedText>
+        <Pressable onPress={handleRegister} hitSlop={8}>
+            <ThemedText type="default" style={[styles.registerText, styles.link]}>
+                Cadastrar-se
+            </ThemedText>
+        </Pressable>
+    </View>
+
+    <ThemedText type="default" style={styles.footerNote}>
+        Seus dados são enviados com segurança para o Helpet.
+    </ThemedText>
                 </View>
             </KeyboardAvoidingView>
         </SafeAreaView>
@@ -173,5 +220,20 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         opacity: 0.65,
         marginTop: size.md,
+    },
+    link: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary, // troque pela cor de destaque do seu theme
+    },
+    registerRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: size.xs, // se não existir no seu theme, use 4
+        marginTop: size.lg,
+    },
+    registerText: {
+        fontSize: 14,
     },
 }); 

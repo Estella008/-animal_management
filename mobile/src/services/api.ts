@@ -1,13 +1,7 @@
 import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-/**
- * Endereço base da API Django.
- *
- * Ordem de prioridade:
- * 1. Variável de ambiente EXPO_PUBLIC_API_URL (arquivo mobile/.env)
- *    -> use isso no celular físico, com o IP do seu computador.
- * 2. Valor padrão por plataforma (emuladores/simuladores).
- */
+
 const DEFAULT_URL = Platform.select({
   android: 'http://10.0.2.2:8000/api', // emulador Android enxerga o PC por 10.0.2.2
   default: 'http://localhost:8000/api', // iOS simulator e web
@@ -34,42 +28,80 @@ export function setAuthToken(token: string | null) {
   authToken = token;
 }
 
-/**
- * Função base para falar com o backend.
- * Exemplo: apiFetch('/usuarios/', { method: 'POST', body: JSON.stringify({...}) })
- */
+
 export async function apiFetch<T = unknown>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
+  const isFormData = options.body instanceof FormData;
+
+  const headers = {
+    ...(!isFormData ? { 'Content-Type': 'application/json' } : {}),
+    ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+    ...options.headers,
+  };
+
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
-      ...options.headers,
-    },
+    headers,
   });
 
-  // Algumas respostas (ex.: DELETE) vêm sem corpo.
-  const data = response.status === 204 ? null : await response.json().catch(() => null);
+  const data =
+    response.status === 204
+      ? null
+      : await response.json().catch(() => null);
 
   if (!response.ok) {
-  console.log('Status HTTP:', response.status);
-  console.log('Resposta do backend:', JSON.stringify(data, null, 2));
+    console.log('Status HTTP:', response.status);
+    console.log('Resposta do backend:', JSON.stringify(data, null, 2));
 
-  throw new ApiError(response.status, data);
-}
+    throw new ApiError(response.status, data);
+  }
 
   return data as T;
 }
-
 /** Atalhos para os métodos mais usados. */
 export const api = {
   get: <T>(path: string) => apiFetch<T>(path),
+
   post: <T>(path: string, body: unknown) =>
-    apiFetch<T>(path, { method: 'POST', body: JSON.stringify(body) }),
+    apiFetch<T>(path, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  postForm: <T>(path: string, body: FormData) =>
+    apiFetch<T>(path, {
+      method: 'POST',
+      body,
+    }),
+
   put: <T>(path: string, body: unknown) =>
-    apiFetch<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
-  delete: <T>(path: string) => apiFetch<T>(path, { method: 'DELETE' }),
+    apiFetch<T>(path, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  delete: <T>(path: string) =>
+    apiFetch<T>(path, {
+      method: 'DELETE',
+    }),
 };
+function getApiUrl(): string {
+  // Se você definir manualmente (ex: produção), ela tem prioridade
+  if (process.env.EXPO_PUBLIC_API_URL) {
+    return process.env.EXPO_PUBLIC_API_URL;
+  }
+
+  // Em desenvolvimento: pega o IP do computador que está rodando o Expo
+  const host = Constants.expoConfig?.hostUri?.split(':')[0];
+
+  if (host) {
+    return `http://${host}:8000`;
+  }
+
+
+  return 'http://10.0.2.2:8000';
+}
+
+export const API_URL = getApiUrl();
