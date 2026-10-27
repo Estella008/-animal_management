@@ -13,32 +13,53 @@ import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
-import { api, ApiError } from '@/services/api';
+import { api, ApiError, setAuthToken } from '@/services/api';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [carregando, setCarregando] = useState(false);
 
-    const handleLogin = async () => {
-        if (!email.trim() || !senha.trim()) {
-            Alert.alert('Atenção', 'Preencha todos os campos.');
-            return;
-        }
+    
+   type LoginResponse = {
+    token: string;
+};
 
-        const emailNormalizado = email.trim().toLowerCase();
+const handleLogin = async () => {
+    if (!email.trim() || !senha) {
+        Alert.alert('Atenção', 'Preencha todos os campos.');
+        return;
+    }
 
-        try {
-            setCarregando(true);
-            // TODO: chamada à API do Django (ajustar conforme seu services/api)
-            // await api.post('/api/login/', { email: emailNormalizado, senha });
-            console.log('Login:', emailNormalizado);
-        } catch (erro) {
-            Alert.alert('Erro', 'Não foi possível entrar. Tente novamente.');
-        } finally {
-            setCarregando(false);
+    const postData = {
+        email: email.trim().toLowerCase(),
+        senha: senha,
+    };
+
+    try {
+        setCarregando(true);
+        const response = await api.post<LoginResponse>('/login/', postData);
+
+        const token = response.token;
+        setAuthToken(token); // guarda o token em memória para as próximas chamadas
+        // TODO: guardar com expo-secure-store e navegar para a home
+    } catch (erro) {
+        if (erro instanceof ApiError && (erro.status === 400 || erro.status === 401)) {
+            Alert.alert('Erro', 'E-mail ou senha incorretos.');
+        } else {
+            Alert.alert('Erro', 'Não foi possível conectar. Verifique sua internet.');
         }
-    }; // 👈 faltava fechar aqui
+    } finally {
+        setCarregando(false);
+    }
+};
+    const handleForgotPassword = () => {
+        Alert.alert('Esqueci minha senha', 'Funcionalidade ainda não implementada.');
+    }
+    const handleRegister = () => {
+        Alert.alert('Criar conta', 'Funcionalidade ainda não implementada.');
+    }
+    const 
 
     return (
         <SafeAreaView style={styles.safe}>
