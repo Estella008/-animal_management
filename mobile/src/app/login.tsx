@@ -1,1 +1,1 @@
-export {defoult} from '@/screens/login';
+export {default} from '@/screens/login';
