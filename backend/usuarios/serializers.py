@@ -1,6 +1,3 @@
-
-import uuid
-
 from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 
@@ -25,7 +22,6 @@ class CadastroSerializer(serializers.ModelSerializer):
         senha = validated_data.pop("password")
 
         return Usuario.objects.create_user(
-            username=uuid.uuid4().hex,
             password=senha,
             **validated_data,
         )

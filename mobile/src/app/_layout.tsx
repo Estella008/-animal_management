@@ -5,5 +5,7 @@ export default function RootLayout() {
     <Stack.Screen name="index" />
     <Stack.Screen name="cadastro-pet" />
     <Stack.Screen name="login" />
+    <Stack.Screen name="cadastro-usuario" />
+    <Stack.Screen name="home" />
   </Stack>);
 }

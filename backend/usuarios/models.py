@@ -29,5 +29,7 @@ class Usuario(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["nome"]
 
+    objects = UsuarioManager()
+
     def __str__(self):
         return self.nome

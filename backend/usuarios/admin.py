@@ -1,5 +1,26 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+
 from .models import Usuario
 
-admin.site.register(Usuario, UserAdmin)
+
+@admin.register(Usuario)
+class UsuarioAdmin(UserAdmin):
+    model = Usuario
+    ordering = ['email']
+    list_display = ['email', 'nome', 'is_staff']
+    search_fields = ['email', 'nome']
+
+    fieldsets = (
+        (None, {'fields': ('email', 'password')}),
+        ('Dados pessoais', {'fields': ('nome',)}),
+        ('Permissões', {'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions')}),
+        ('Datas importantes', {'fields': ('last_login', 'date_joined')}),
+    )
+
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('email', 'nome', 'password1', 'password2'),
+        }),
+    )
