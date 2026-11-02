@@ -15,13 +15,19 @@ import { ThemedText } from '@/components/themed-text';
 import { PrimaryButton } from '@/components/ui/primary-button';
 import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
-import { api, ApiError, setAuthToken } from '@/services/api';
+import { api, ApiError } from '@/services/api';
+import { useAuth } from '@/context/AuthContext';
 
+type LoginResponse = {
+  access: string;
+  refresh: string;
+};
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [senha, setSenha] = useState('');
     const [carregando, setCarregando] = useState(false);
     const router = useRouter();
+    const { entrar } = useAuth();
 
     
    type LoginResponse = {
@@ -49,10 +55,11 @@ const handleLogin = async () => {
             postData
         );
 
-        setAuthToken(response.access);
-        router.replace('/home');
+        await entrar(response.access);
+        
 
     } catch (erro) {
+        console.error('Erro ao fazer login:', erro);
         if (erro instanceof ApiError && (erro.status === 400 || erro.status === 401)) {
             Alert.alert('Erro', 'E-mail ou senha incorretos ou conta inativa.');
         } else {
