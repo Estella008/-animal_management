@@ -1,24 +1,23 @@
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework import generics
+from rest_framework.parsers import FormParser, MultiPartParser
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework import status
 
+from .models import Animal
 from .serializers import AnimalSerializer
 
 
-@api_view(['POST'])
-@permission_classes([IsAuthenticated])
-def cadastrar_animal(request):
-    serializer = AnimalSerializer(data=request.data)
+class CadastrarAnimalView(generics.CreateAPIView):
+    serializer_class = AnimalSerializer
+    permission_classes = [IsAuthenticated]          # só entra quem está logado
+    parser_classes = [MultiPartParser, FormParser]  # permite receber a foto
 
-    if serializer.is_valid():
-        animal = serializer.save(tutor=request.user)
-        return Response(
-            AnimalSerializer(animal).data,
-            status=status.HTTP_201_CREATED
-        )
+    def perform_create(self, serializer):
+        serializer.save(tutor=self.request.user)    # pet ligado a quem está logada
 
-    return Response(
-        serializer.errors,
-        status=status.HTTP_400_BAD_REQUEST
-    )
+
+class ListarAnimaisView(generics.ListAPIView):
+    serializer_class = AnimalSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Animal.objects.filter(tutor=self.request.user)  # só os pets dela

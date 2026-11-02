@@ -1,180 +1,166 @@
 import { useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
- 
+import { router } from 'expo-router';
+import * as ImagePicker from 'expo-image-picker';
+
 import { ThemedText } from '@/components/themed-text';
-import { CheckboxList } from '@/components/ui/checkbox-list';
 import { ChoiceGroup } from '@/components/ui/choice-group';
 import { PhotoPicker } from '@/components/ui/photo-picker';
 import { PrimaryButton } from '@/components/ui/primary-button';
+import { SelectOpcao } from '@/components/ui/select-opcao';
 import { TextField } from '@/components/ui/text-field';
 import { colors, MaxContentWidth, size } from '@/constants/theme';
 import { maskDate, maskWeight } from '@/utils/masks';
 import { api, ApiError } from '@/services/api';
 import { File } from 'expo-file-system';
 
-import * as ImagePicker from 'expo-image-picker';
- 
 type Especie = 'cachorro' | 'gato';
 type Sexo = 'macho' | 'femea';
 type Sim = 'sim' | 'nao';
 type Porte = 'pequeno' | 'medio' | 'grande';
- 
-// Lista de vacinas muda conforme a espécie
-const VACINAS: Record<Especie, string[]> = {
-  cachorro: ['V10 / V8', 'Antirrábica', 'Gripe canina'],
-  gato: ['V3 / V4 / V5', 'Antirrábica', 'Leucemia felina (FeLV)'],
-};
- 
+
 export default function CadastroPetScreen() {
   const [nome, setNome] = useState('');
   const [fotoUri, setFotoUri] = useState<string | null>(null);
   const [fotoSelecionada, setFotoSelecionada] =
     useState<ImagePicker.ImagePickerAsset | null>(null);
   const [especie, setEspecie] = useState<Especie>('cachorro');
+  const [raca, setRaca] = useState('');
   const [nascimento, setNascimento] = useState('');
   const [sexo, setSexo] = useState<Sexo | null>(null);
   const [castrado, setCastrado] = useState<Sim | null>(null);
   const [porte, setPorte] = useState<Porte | null>(null);
   const [peso, setPeso] = useState('');
-  const [vacinas, setVacinas] = useState<string[]>([]);
-  const [extras, setExtras] = useState<string[]>([]);
-  const [novaVacina, setNovaVacina] = useState<string | null>(null); // null = campo fechado
   const [observacoes, setObservacoes] = useState('');
- 
+  const [salvando, setSalvando] = useState(false);
+
+  // Guarda o id do pet depois de salvo. Só com ele dá para cadastrar vacinas,
+  // porque cada vacina no banco "aponta" para um pet (chave estrangeira).
+  const [petId, setPetId] = useState<number | null>(null);
+
   function trocarEspecie(e: Especie) {
     setEspecie(e);
-    setVacinas([]); // as vacinas de um cachorro não servem para um gato
-    setExtras([]);
+    setRaca(''); // a raça de um cachorro não serve para um gato
   }
- 
-  function alternarVacina(v: string) {
-    setVacinas((atual) => (atual.includes(v) ? atual.filter((x) => x !== v) : [...atual, v]));
-  }
- 
-  function adicionarVacina() {
-    const v = (novaVacina ?? '').trim();
-    if (v && ![...VACINAS[especie], ...extras].includes(v)) {
-      setExtras((atual) => [...atual, v]);
-      setVacinas((atual) => [...atual, v]);
+
+  async function escolherFoto() {
+    try {
+      const resultado = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+      if (!resultado.canceled && resultado.assets.length > 0) {
+        const imagem = resultado.assets[0];
+        setFotoUri(imagem.uri);
+        setFotoSelecionada(imagem);
+      }
+    } catch (erro) {
+      console.log('Erro ao selecionar foto:', erro);
+      Alert.alert('Erro', 'Não foi possível selecionar a foto.');
     }
-    setNovaVacina(null);
   }
 
+  function anexarFoto(formData: FormData): boolean {
+    if (!fotoSelecionada) return true;
 
-async function escolherFoto() {
-  try {
-    const resultado = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!resultado.canceled && resultado.assets.length > 0) {
-      const imagem = resultado.assets[0];
-
-      setFotoUri(imagem.uri);
-      setFotoSelecionada(imagem);
-    }
-    
-  } catch (erro) {
-    console.log('Erro ao selecionar foto:', erro);
-    Alert.alert('Erro', 'Não foi possível selecionar a foto.');
-  }
-}
-  
-async function salvar() {
-  if (!nome.trim()) {
-    Alert.alert('Falta o nome', 'Informe o nome do animal.');
-    return;
-  }
-
-  if (!sexo || !porte || castrado === null) {
-    Alert.alert('Campos obrigatórios', 'Preencha sexo, porte e castrado.');
-    return;
-  }
-
-  let dataNascimento = null;
-
-  if (nascimento) {
-    const partes = nascimento.split('/');
-
-    if (partes.length !== 3) {
-      Alert.alert('Data inválida', 'Informe a data no formato dd/mm/aaaa.');
-      return;
+    if (Platform.OS === 'web') {
+      // No navegador, o ImagePicker já entrega um arquivo "de verdade".
+      if (!fotoSelecionada.file) {
+        Alert.alert('Erro', 'Não foi possível preparar a foto.');
+        return false;
+      }
+      formData.append('foto', fotoSelecionada.file);
+      return true;
     }
 
-    const [dia, mes, ano] = partes;
-    dataNascimento = `${ano}-${mes}-${dia}`;
-  }
+    // No celular (Android/iOS), o FormData do React Native espera um objeto
+   
+    const tipo = fotoSelecionada.mimeType ?? 'image/jpeg';
+    const extensao = tipo.split('/')[1] ?? 'jpg';
+    const nomeArquivo = fotoSelecionada.fileName ?? `pet-${Date.now()}.${extensao}`;
 
-  const pet = {
-    nome: nome.trim(),
-    especie,
-    data_nascimento: dataNascimento,
-    sexo,
-    castrado: castrado === 'sim',
-    porte,
-    peso: peso ? Number(peso.replace(',', '.')) : null,
-    observacoes,
-  };
-
-
-const formData = new FormData();
-
-Object.entries(pet).forEach(([campo, valor]) => {
-  if (valor !== null && valor !== undefined) {
-    formData.append(campo, String(valor));
-  }
-});
-
-
-
-if (fotoSelecionada) {
-  if (Platform.OS === 'web') {
-    if (!fotoSelecionada.file) {
-      Alert.alert('Erro', 'Não foi possível preparar a foto.');
-      return;
-    }
-
-    formData.append('foto', fotoSelecionada.file);
-  } else {
     const arquivo = new File(fotoSelecionada.uri);
-    formData.append('foto', arquivo);
+    formData.append('foto', arquivo, nomeArquivo);
+    return true;
   }
-}
 
+  async function salvar() {
+    if (!nome.trim()) {
+      Alert.alert('Falta o nome', 'Informe o nome do animal.');
+      return;
+    }
 
+    if (!sexo || !porte || castrado === null) {
+      Alert.alert('Campos obrigatórios', 'Preencha sexo, porte e castrado.');
+      return;
+    }
 
-  try {
-    await api.postForm('/animais/cadastrar/', formData);
+    let dataNascimento: string | null = null;
+    if (nascimento) {
+      const partes = nascimento.split('/');
+      if (partes.length !== 3) {
+        Alert.alert('Data inválida', 'Informe a data no formato dd/mm/aaaa.');
+        return;
+      }
+      const [dia, mes, ano] = partes;
+      dataNascimento = `${ano}-${mes}-${dia}`;
+    }
 
-    Alert.alert(
-      'Sucesso!',
-      `${pet.nome} foi cadastrado no banco de dados!`
-    );
-  } catch (erro) {
-    console.log('Erro ao cadastrar animal:', erro);
+    const pet = {
+      nome: nome.trim(),
+      especie,
+      raca: raca.trim(),
+      data_nascimento: dataNascimento,
+      sexo,
+      castrado: castrado === 'sim',
+      porte,
+      peso: peso ? Number(peso.replace(',', '.')) : null,
+      observacoes,
+    };
 
-    if (erro instanceof ApiError) {
-      console.log('Detalhes da API:', erro.data);
+    const formData = new FormData();
+    Object.entries(pet).forEach(([campo, valor]) => {
+      if (valor !== null && valor !== undefined && valor !== '') {
+        formData.append(campo, String(valor));
+      }
+    });
 
-      Alert.alert(
-        'Erro ao cadastrar',
-        typeof erro.data === 'string'
-          ? erro.data
-          : JSON.stringify(erro.data)
-      );
-    } else {
-      Alert.alert(
-        'Erro',
-        'Não foi possível conectar ao servidor.'
-      );
+    if (!anexarFoto(formData)) return;
+
+    try {
+      setSalvando(true);
+      const criado: any = await api.postForm('/animais/cadastrar/', formData);
+      setPetId(criado?.id ?? null);
+
+      Alert.alert('Sucesso!', `${pet.nome} foi cadastrado. Agora você pode cadastrar as vacinas.`);
+    } catch (erro) {
+      console.log('Erro ao cadastrar animal:', erro);
+      if (erro instanceof ApiError) {
+        console.log('Detalhes da API:', erro.data);
+        Alert.alert(
+          'Erro ao cadastrar',
+          typeof erro.data === 'string' ? erro.data : JSON.stringify(erro.data)
+        );
+      } else {
+        Alert.alert('Erro', 'Não foi possível conectar ao servidor.');
+      }
+    } finally {
+      setSalvando(false);
     }
   }
 
-}
- 
+  function irParaVacinas() {
+    if (!petId) {
+      Alert.alert('Salve o pet primeiro', 'As vacinas ficam ligadas ao pet, então ele precisa estar cadastrado.');
+      return;
+    }
+    // Ajuste o caminho para o nome real da sua tela de vacinas
+    Alert.alert('Redirecionando', `Você será redirecionado para cadastrar vacinas do pet com ID ${petId}.`);
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
@@ -185,14 +171,11 @@ if (fotoSelecionada) {
           <ThemedText type="title" style={styles.title}>
             Cadastro do pet
           </ThemedText>
- 
-          <PhotoPicker
-            uri={fotoUri}
-            onPress={escolherFoto}
-          />
- 
+
+          <PhotoPicker uri={fotoUri} onPress={escolherFoto} />
+
           <TextField label="Nome do animal" placeholder="Ex.: Thor" value={nome} onChangeText={setNome} />
- 
+
           <View style={styles.row}>
             <ChoiceGroup
               flex
@@ -205,7 +188,17 @@ if (fotoSelecionada) {
               ]}
             />
           </View>
- 
+
+          <SelectOpcao
+            label="Raça"
+            optional
+            tipo="raca"
+            especie={especie}
+            placeholder="Selecione a raça"
+            value={raca}
+            onChange={setRaca}
+          />
+
           <TextField
             label="Nascimento"
             placeholder="dd/mm/aaaa"
@@ -213,7 +206,7 @@ if (fotoSelecionada) {
             value={nascimento}
             onChangeText={(t) => setNascimento(maskDate(t))}
           />
- 
+
           <View style={styles.row}>
             <ChoiceGroup
               flex
@@ -236,7 +229,7 @@ if (fotoSelecionada) {
               ]}
             />
           </View>
- 
+
           <ChoiceGroup
             label="Porte"
             value={porte}
@@ -247,7 +240,7 @@ if (fotoSelecionada) {
               { label: 'Grande', value: 'grande' },
             ]}
           />
- 
+
           <TextField
             label="Peso"
             optional
@@ -257,31 +250,7 @@ if (fotoSelecionada) {
             value={peso}
             onChangeText={(t) => setPeso(maskWeight(t))}
           />
- 
-          <CheckboxList
-            label="Vacinas"
-            items={[...VACINAS[especie], ...extras]}
-            selected={vacinas}
-            onToggle={alternarVacina}
-          />
- 
-          {novaVacina === null ? (
-            <Pressable onPress={() => setNovaVacina('')} style={styles.addLink}>
-              <ThemedText type="linkPrimary">+ Adicionar outra vacina</ThemedText>
-            </Pressable>
-          ) : (
-            <TextField
-              label="Nome da vacina"
-              placeholder="Ex.: Giárdia"
-              autoFocus
-              value={novaVacina}
-              onChangeText={setNovaVacina}
-              onSubmitEditing={adicionarVacina}
-              onBlur={adicionarVacina}
-              returnKeyType="done"
-            />
-          )}
- 
+
           <TextField
             label="Observações"
             multiline
@@ -289,14 +258,18 @@ if (fotoSelecionada) {
             value={observacoes}
             onChangeText={setObservacoes}
           />
- 
-          <PrimaryButton title="Salvar pet" onPress={salvar} />
+
+          {petId === null ? (
+            <PrimaryButton title={salvando ? 'Salvando...' : 'Salvar pet'} onPress={salvar} />
+          ) : (
+            <PrimaryButton title="Cadastrar vacinas" onPress={irParaVacinas} />
+          )}
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
- 
+
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   content: {
@@ -309,5 +282,4 @@ const styles = StyleSheet.create({
   stage: { marginTop: size.marginTopView },
   title: { marginBottom: size.xl },
   row: { flexDirection: 'row', gap: size.md },
-  addLink: { marginTop: -size.sm, marginBottom: size.xl },
 });
