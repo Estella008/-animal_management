@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'usuarios',
     'animais',
     'agenda',
+    'opcoes',
 ]
 
 MIDDLEWARE = [
