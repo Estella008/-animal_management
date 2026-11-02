@@ -1,70 +1,124 @@
-import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { useFocusEffect, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
-import { colors } from '@/constants/theme';
+import { BottomNav, type BottomNavItem } from '@/components/ui/bottom-nav';
+import { HomeHeader } from '@/components/ui/home-header';
+import { NoticeCard } from '@/components/ui/notice-card';
+import { PetList } from '@/components/ui/pet-list';
+import { SideMenu } from '@/components/ui/side-menu';
+import { colors, MaxContentWidth, size } from '@/constants/theme';
+import { useAuth } from '@/context/AuthContext';
+import { listarAnimais, type Animal } from '@/services/animais';
+import { ApiError } from '@/services/api';
+import { buscarUsuarioLogado, type Usuario } from '@/services/usuarios';
+import { avisarEmBreve } from '@/utils/em-breve';
 
-export default function Index() {
+export default function HomeScreen() {
   const router = useRouter();
+  const { sair } = useAuth();
+
+  const [usuario, setUsuario] = useState<Usuario | null>(null);
+  const [animais, setAnimais] = useState<Animal[]>([]);
+  const [carregando, setCarregando] = useState(true);
+  const [erro, setErro] = useState(false);
+  const [menuAberto, setMenuAberto] = useState(false);
+
+  const carregarDados = useCallback(async () => {
+    setCarregando(true);
+    setErro(false);
+
+    try {
+      const [dadosUsuario, listaAnimais] = await Promise.all([
+        buscarUsuarioLogado(),
+        listarAnimais(),
+      ]);
+      setUsuario(dadosUsuario);
+      setAnimais(listaAnimais);
+    } catch (e) {
+      console.log('Erro ao carregar a Home:', e);
+
+      // 401 = token vencido ou inválido: volta para o login
+      if (e instanceof ApiError && e.status === 401) {
+        await sair();
+        return;
+      }
+      setErro(true);
+    } finally {
+      setCarregando(false);
+    }
+  }, [sair]);
+
+  // useFocusEffect roda sempre que a tela aparece, inclusive ao voltar do
+  // cadastro. É assim que um animal novo já surge na lista.
+  useFocusEffect(
+    useCallback(() => {
+      carregarDados();
+    }, [carregarDados]),
+  );
+
+  const irParaCadastro = () => router.push('/cadastro-pet');
+
+  const itensNavegacao: BottomNavItem[] = [
+    { label: 'Início', icon: 'home', active: true },
+    { label: 'Cadastro de animais', icon: 'happy-outline', onPress: irParaCadastro },
+    { label: 'Agenda', icon: 'calendar-outline', onPress: () => avisarEmBreve('Agenda') },
+  ];
 
   return (
-    <ThemedView style={styles.container}>
-      <Pressable
-        style={styles.card}
-        onPress={() => router.push('/cadastro-pet')}
-      >
-        <View style={styles.iconContainer}>
-          <Ionicons name="paw" size={36} color="#FFFFFF" />
-          <View style={styles.plus}>
-            <Ionicons name="add" size={16} color="#087F70" />
-          </View>
-        </View>
+    <SafeAreaView edges={['top']} style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <HomeHeader nome={usuario?.nome ?? ''} onAvatarPress={() => setMenuAberto(true)} />
 
-        <ThemedText type="subtitle">
-          Cadastrar animal
-        </ThemedText>
-      </Pressable>
-    </ThemedView>
+        {/* Aviso apenas ilustrativo: depois virá da agenda de cada animal */}
+        <NoticeCard
+          title="Acompanhamento próximo"
+          message="Thor tem consulta em 02 out para acompanhar a displasia no quadril."
+          actionLabel="Ver ficha"
+          onAction={() => avisarEmBreve('Ficha do animal')}
+        />
+
+        <View style={styles.section}>
+          <ThemedText type="subtitle">Meus animais</ThemedText>
+          <PetList
+            animais={animais}
+            carregando={carregando}
+            erro={erro}
+            onTentarNovamente={carregarDados}
+            onCadastrar={irParaCadastro}
+          />
+        </View>
+      </ScrollView>
+
+      <BottomNav items={itensNavegacao} />
+
+      <SideMenu
+        visible={menuAberto}
+        nome={usuario?.nome ?? ''}
+        email={usuario?.email ?? ''}
+        onClose={() => setMenuAberto(false)}
+        onEditarConta={() => avisarEmBreve('Editar conta')}
+        onConfiguracoes={() => avisarEmBreve('Configurações')}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
+    backgroundColor: colors.background,
   },
-  card: {
-    width: 170,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-    padding: 24,
-    backgroundColor: colors.backgroundElement,
-    borderRadius: 18,
-    borderWidth: 1,
-    borderColor: colors.border,
+  content: {
+    width: '100%',
+    maxWidth: MaxContentWidth,
+    alignSelf: 'center',
+    gap: size.xl,
+    padding: size.xl,
   },
-  iconContainer: {
-    width: 76,
-    height: 76,
-    borderRadius: 24,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  plus: {
-    position: 'absolute',
-    right: -4,
-    bottom: -4,
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'center',
+  section: {
+    gap: size.md,
   },
 });

@@ -16,6 +16,8 @@ const lightColors = {
   white: '#FFFFFF',
   black: '#000000',
   danger: '#C74747',
+  dangerBackground: '#FBE6E1',
+  dangerBorder: '#F3CDC5',
 };
 
 const darkColors = {
@@ -34,6 +36,8 @@ const darkColors = {
   white: '#FFFFFF',
   black: '#000000',
   danger: '#F07474',
+  dangerBackground: '#3A2422',
+  dangerBorder: '#5A3531',
 };
 
 export const Colors = {
@@ -81,6 +85,9 @@ export const size = {
   radiusLg: 14,
   radiusXl: 18,
   radiusPill: 999,
+
+  avatar: 48,
+  petThumb: 52,
 
   marginTopView: 20,
   
