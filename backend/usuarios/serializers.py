@@ -25,3 +25,7 @@ class CadastroSerializer(serializers.ModelSerializer):
             password=senha,
             **validated_data,
         )
+class UsuarioSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Usuario
+        fields = ["id", "nome", "email"]
