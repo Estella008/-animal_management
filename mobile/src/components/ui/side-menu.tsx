@@ -16,10 +16,11 @@ type Props = {
   email: string;
   onClose: () => void;
   onEditarConta: () => void;
-  onConfiguracoes: () => void;
+  onConfiguracoes: () => void;    
+  onSair: () => void;
 };
 
-export function SideMenu({ visible, nome, email, onClose, onEditarConta, onConfiguracoes }: Props) {
+export function SideMenu({ visible, nome, email, onClose, onEditarConta, onConfiguracoes, onSair }: Props) {
   const { width } = useWindowDimensions();
   const largura = Math.min(LARGURA_MAXIMA, width * 0.82);
 
@@ -73,6 +74,7 @@ export function SideMenu({ visible, nome, email, onClose, onEditarConta, onConfi
 
             <MenuItem icon="person-outline" label="Editar conta" onPress={onEditarConta} />
             <MenuItem icon="settings-outline" label="Configurações" onPress={onConfiguracoes} />
+            <MenuItem icon="log-out-outline" label="Sair" onPress={onSair} />
           </SafeAreaView>
         </Animated.View>
       </View>

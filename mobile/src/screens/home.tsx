@@ -101,6 +101,7 @@ export default function HomeScreen() {
         onClose={() => setMenuAberto(false)}
         onEditarConta={() => avisarEmBreve('Editar conta')}
         onConfiguracoes={() => avisarEmBreve('Configurações')}
+        onSair={sair}
       />
     </SafeAreaView>
   );
