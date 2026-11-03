@@ -4,7 +4,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
-import { BottomNav, type BottomNavItem } from '@/components/ui/bottom-nav';
+
 import { HomeHeader } from '@/components/ui/home-header';
 import { NoticeCard } from '@/components/ui/notice-card';
 import { PetList } from '@/components/ui/pet-list';
@@ -61,11 +61,7 @@ export default function HomeScreen() {
 
   const irParaCadastro = () => router.push('/cadastro-pet');
 
-  const itensNavegacao: BottomNavItem[] = [
-    { label: 'Início', icon: 'home', active: true },
-    { label: 'Cadastro de animais', icon: 'happy-outline', onPress: irParaCadastro },
-    { label: 'Agenda', icon: 'calendar-outline', onPress: () => avisarEmBreve('Agenda') },
-  ];
+
 
   return (
     <SafeAreaView edges={['top']} style={styles.safe}>
@@ -92,7 +88,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      <BottomNav items={itensNavegacao} />
+      
 
       <SideMenu
         visible={menuAberto}

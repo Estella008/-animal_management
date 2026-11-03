@@ -1,45 +1,60 @@
-import type { ComponentProps } from 'react';
-import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, View } from 'react-native';
+import type { BottomTabBarProps } from 'expo-router/tabs';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { colors, fonts, size } from '@/constants/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { avisarEmBreve } from '@/utils/em-breve';
 
-export type BottomNavItem = {
-  label: string;
-  icon: ComponentProps<typeof Ionicons>['name'];
-  active?: boolean;
-  onPress?: () => void;
-};
-
-type Props = {
-  items: BottomNavItem[];
-};
-
-export function BottomNav({ items }: Props) {
+export function BottomNav({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   return (
     <SafeAreaView edges={['bottom']} style={styles.bar}>
       <View style={styles.row}>
-        {items.map((item) => (
-          <Pressable
-            key={item.label}
-            accessibilityRole="button"
-            accessibilityState={{ selected: !!item.active }}
-            onPress={item.onPress}
-            style={styles.item}>
-            <Ionicons
-              name={item.icon}
-              size={24}
-              color={item.active ? colors.primary : colors.text}
-            />
-            <ThemedText
-              numberOfLines={1}
-              style={[styles.label, item.active && styles.labelActive]}>
-              {item.label}
-            </ThemedText>
-          </Pressable>
-        ))}
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const ativa = state.index === index;
+          const label = options.title ?? route.name;
+          const cor = ativa ? colors.primary : colors.text;
+
+          function abrirAba() {
+            const evento = emitter.emit({
+              type: 'tabPress',
+              target: route.key,
+              canPreventDefault: true,
+            });
+
+            if (!ativa && !evento.defaultPrevented) {
+              navigateToTab(route.key);
+            }
+          }
+
+          return (
+            <Pressable
+              key={route.key}
+              accessibilityRole="tab"
+              accessibilityLabel={label}
+              accessibilityState={{ selected: ativa }}
+              onPress={abrirAba}
+              style={styles.item}>
+              {options.tabBarIcon?.({ focused: ativa, color: cor, size: 24 })}
+              <ThemedText numberOfLines={1} style={[styles.label, ativa && styles.labelActive]}>
+                {label}
+              </ThemedText>
+            </Pressable>
+
+          );
+        })}
+      <Pressable
+          accessibilityRole="button"
+          accessibilityLabel="Agenda"
+          onPress={() => avisarEmBreve('Agenda')}
+          style={styles.item}>
+          <Ionicons name="calendar-outline" size={24} color={colors.text} />
+          <ThemedText numberOfLines={1} style={styles.label}>
+            Agenda
+          </ThemedText>
+        </Pressable>
       </View>
     </SafeAreaView>
   );

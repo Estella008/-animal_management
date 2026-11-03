@@ -11,13 +11,13 @@ function Navegacao() {
       {/* Telas que exigem login */}
       <Stack.Protected guard={!!token}>
         <Stack.Screen name="index" />
-        <Stack.Screen name="cadastro-usuario" />
-        <Stack.Screen name="cadastro-pet" />
+        <Stack.Screen name="(tabs)" />
       </Stack.Protected>
 
       {/* Telas só para quem NÃO está logada */}
       <Stack.Protected guard={!token}>
         <Stack.Screen name="login" />
+        <Stack.Screen name="cadastro-usuario" />
         
       </Stack.Protected>
     </Stack>
