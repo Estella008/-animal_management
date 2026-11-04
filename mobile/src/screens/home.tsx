@@ -84,7 +84,13 @@ export default function HomeScreen() {
             erro={erro}
             onTentarNovamente={carregarDados}
             onCadastrar={irParaCadastro}
-          />
+            onSelecionarAnimal={(id) =>
+              router.push({
+                pathname: '/pet/[id]',
+                params: { id: String(id) },
+              })
+            }
+        />
         </View>
       </ScrollView>
 

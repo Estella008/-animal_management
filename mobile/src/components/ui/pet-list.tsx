@@ -12,9 +12,10 @@ type Props = {
   erro: boolean;
   onTentarNovamente: () => void;
   onCadastrar: () => void;
+  onSelecionarAnimal: (id: number) => void;
 };
 
-export function PetList({ animais, carregando, erro, onTentarNovamente, onCadastrar }: Props) {
+export function PetList({ animais, carregando, erro, onTentarNovamente, onCadastrar, onSelecionarAnimal }: Props) {
   // Só mostra o carregamento quando ainda não há nada na tela.
   // Assim, a lista não pisca ao voltar de outra tela.
   if (carregando && animais.length === 0) {
@@ -48,7 +49,11 @@ export function PetList({ animais, carregando, erro, onTentarNovamente, onCadast
   return (
     <View style={styles.list}>
       {animais.map((animal) => (
-        <PetCard key={animal.id} animal={animal} />
+        <PetCard 
+          key={animal.id} 
+          animal={animal} 
+          onPress={() => onSelecionarAnimal(animal.id)}
+        />
       ))}
     </View>
   );

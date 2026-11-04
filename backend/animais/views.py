@@ -21,3 +21,11 @@ class ListarAnimaisView(generics.ListAPIView):
 
     def get_queryset(self):
         return Animal.objects.filter(tutor=self.request.user)  # só os pets dela
+
+class DetalhesAnimalView(generics.RetrieveUpdateAPIView):
+    serializer_class = AnimalSerializer
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_queryset(self):
+        return Animal.objects.filter(tutor=self.request.user)

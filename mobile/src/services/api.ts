@@ -76,6 +76,12 @@ export const api = {
       body,
     }),
 
+  patchForm: <T>(path: string, body: FormData) =>
+    apiFetch<T>(path, {
+    method: 'PATCH',
+    body,
+  }),
+
   put: <T>(path: string, body: unknown) =>
     apiFetch<T>(path, {
       method: 'PUT',
