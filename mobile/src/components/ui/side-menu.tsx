@@ -6,9 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { colors, size } from '@/constants/theme';
+import { useNavigation } from '../../../.expo/types/router';
+
 
 const LARGURA_MAXIMA = 300;
 const DURACAO = 220;
+const navigation =  useNavigation()
 
 type Props = {
   visible: boolean;
@@ -72,7 +75,7 @@ export function SideMenu({ visible, nome, email, onClose, onEditarConta, onConfi
               </View>
             </View>
 
-            <MenuItem icon="person-outline" label="Editar conta" onPress={onEditarConta} />
+            <MenuItem icon="person-outline" label="Editar conta" onPress={onEditarConta } />
             <MenuItem icon="settings-outline" label="Configurações" onPress={onConfiguracoes} />
             <MenuItem icon="log-out-outline" label="Sair" onPress={onSair} />
           </SafeAreaView>

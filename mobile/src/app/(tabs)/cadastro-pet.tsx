@@ -1,1 +1,1 @@
-export { default } from '@/screens/cadastro-pet';
+export { default } from '@/screens/pet/cadastro-pet';
