@@ -6,12 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemedText } from '@/components/themed-text';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { colors, size } from '@/constants/theme';
-import { useNavigation } from '../../../.expo/types/router';
+
 
 
 const LARGURA_MAXIMA = 300;
 const DURACAO = 220;
-const navigation =  useNavigation()
+
 
 type Props = {
   visible: boolean;

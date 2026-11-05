@@ -101,7 +101,9 @@ export default function HomeScreen() {
         nome={usuario?.nome ?? ''}
         email={usuario?.email ?? ''}
         onClose={() => setMenuAberto(false)}
-        onEditarConta={() => avisarEmBreve('Editar conta')}
+        onEditarConta={() =>  {  setMenuAberto(false);
+          router.push('/usuario/perfil-usuario');
+        }}
         onConfiguracoes={() => avisarEmBreve('Configurações')}
         onSair={sair}
       />
