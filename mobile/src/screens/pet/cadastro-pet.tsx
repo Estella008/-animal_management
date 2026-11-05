@@ -241,14 +241,22 @@ export default function CadastroPetScreen() {
     }
   }
 
+
   function irParaVacinas() {
     if (!petId) {
-      Alert.alert('Salve o pet primeiro', 'As vacinas ficam ligadas ao pet, então ele precisa estar cadastrado.');
+      Alert.alert(
+        'Salve o pet primeiro',
+        'É necessário cadastrar o animal antes de registrar suas vacinas.'
+      );
       return;
     }
-    // Ajuste o caminho para o nome real da sua tela de vacinas
-    Alert.alert('Redirecionando', `Você será redirecionado para cadastrar vacinas do pet com ID ${petId}.`);
+
+    router.push({
+      pathname: '/cadastro-vacina',
+      params: { animalId: String(petId) },
+    });
   }
+
 
   return (
     <SafeAreaView style={styles.safe}>
