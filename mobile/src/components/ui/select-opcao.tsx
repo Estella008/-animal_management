@@ -130,7 +130,11 @@ export function SelectOpcao({ label, tipo, especie, value, onChange, placeholder
                 </Pressable>
               )}
               ListEmptyComponent={
-                !podeAdicionar ? <ThemedText style={styles.placeholder}>Nenhum item encontrado.</ThemedText> : null
+                !podeAdicionar ? (
+                  <ThemedText style={styles.placeholder}>
+                    Nenhum item encontrado.
+                  </ThemedText>
+                ) : undefined
               }
             />
           )}

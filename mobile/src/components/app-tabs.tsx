@@ -1,4 +1,4 @@
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
+/* import { NativeTabs } from 'expo-router/unstable-native-tabs';
 import { useColorScheme } from 'react-native';
 
 import { Icons } from '@/constants/icons';
@@ -29,4 +29,4 @@ export default function AppTabs() {
       </NativeTabs.Trigger>
     </NativeTabs>
   );
-}
+} */

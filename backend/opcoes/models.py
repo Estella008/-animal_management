@@ -11,7 +11,11 @@ class Opcao(models.Model):
     - especie vazia (""): item vale para todas as espécies.
     """
 
-    TIPOS = [("raca", "Raça"), ("vacina", "Vacina")]
+    TIPOS = [
+        ("raca", "Raça"),
+        ("vacina", "Vacina"),
+        ("laboratorio", "Laboratório"),
+    ]
     ESPECIES = [("cachorro", "Cachorro"), ("gato", "Gato")]
 
     tipo = models.CharField(max_length=20, choices=TIPOS)
