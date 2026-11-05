@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
-import { Image, StyleSheet, View } from 'react-native';
+import { Image, Pressable, StyleSheet, View } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { colors, size } from '@/constants/theme';
@@ -13,16 +13,17 @@ const ESPECIES: Record<Animal['especie'], string> = {
 
 type Props = {
   animal: Animal;
+  onPress?: () => void;
 };
 
-export function PetCard({ animal }: Props) {
+export function PetCard({ animal, onPress }: Props) {
   // Se a foto não carregar, o card volta a mostrar a patinha
   const [fotoFalhou, setFotoFalhou] = useState(false);
   const mostrarFoto = animal.foto && !fotoFalhou;
   const descricao = [ESPECIES[animal.especie], animal.raca].filter(Boolean).join(' · ');
 
   return (
-    <View style={styles.card}>
+    <Pressable onPress={onPress} style={styles.card}>
       <View style={styles.thumb}>
         {mostrarFoto ? (
           <Image
@@ -43,7 +44,7 @@ export function PetCard({ animal }: Props) {
           {descricao}
         </ThemedText>
       </View>
-    </View>
+    </Pressable>
   );
 }
 

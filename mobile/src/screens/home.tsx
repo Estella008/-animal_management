@@ -84,7 +84,13 @@ export default function HomeScreen() {
             erro={erro}
             onTentarNovamente={carregarDados}
             onCadastrar={irParaCadastro}
-          />
+            onSelecionarAnimal={(id) =>
+              router.push({
+                pathname: '/pet/[id]',
+                params: { id: String(id) },
+              })
+            }
+        />
         </View>
       </ScrollView>
 
@@ -95,7 +101,9 @@ export default function HomeScreen() {
         nome={usuario?.nome ?? ''}
         email={usuario?.email ?? ''}
         onClose={() => setMenuAberto(false)}
-        onEditarConta={() => avisarEmBreve('Editar conta')}
+        onEditarConta={() =>  {  setMenuAberto(false);
+          router.push('/usuario/perfil-usuario');
+        }}
         onConfiguracoes={() => avisarEmBreve('Configurações')}
         onSair={sair}
       />
