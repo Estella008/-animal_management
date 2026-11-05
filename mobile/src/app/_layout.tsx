@@ -9,8 +9,7 @@ function Navegacao() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       {/* Telas que exigem login */}
-      <Stack.Protected guard={!!token}>
-        <Stack.Screen name="index" />
+      <Stack.Protected guard={!!token}>        
         <Stack.Screen name="(tabs)" />
       </Stack.Protected>
 
