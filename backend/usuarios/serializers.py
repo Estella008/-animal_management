@@ -16,7 +16,10 @@ class CadastroSerializer(serializers.ModelSerializer):
         fields = ["nome", "email", "senha"]
 
     def validate_email(self, value):
-        return value.strip().lower()
+        email =value.strip().lower()
+        if Usuario.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise serializers.ValidationError("Este e-mail já está cadastrado.")
+        return email
 
     def create(self, validated_data):
         senha = validated_data.pop("password")

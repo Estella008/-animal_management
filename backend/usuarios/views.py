@@ -11,7 +11,7 @@ class CadastroView(generics.CreateAPIView):
     serializer_class = CadastroSerializer
     permission_classes = [AllowAny]
 
-class UsuarioLogadoView(generics.RetrieveAPIView):
+class UsuarioLogadoView(generics.RetrieveUpdateAPIView):
     serializer_class = UsuarioSerializer
     permission_classes = [IsAuthenticated]
 

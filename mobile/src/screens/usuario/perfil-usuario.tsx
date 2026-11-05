@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { router } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -9,7 +9,6 @@ import { colors, size } from '@/constants/theme';
 import { useAuth } from '@/context/AuthContext';
 import { ApiError } from '@/services/api';
 import { buscarUsuarioLogado, type Usuario } from '@/services/usuarios';
-import { avisarEmBreve } from '@/utils/em-breve';
 import { duasPrimeirasLetras } from '@/utils/usuario';
 
 export default function PerfilScreen() {
@@ -19,35 +18,39 @@ export default function PerfilScreen() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState(false);
 
-  useEffect(() => {
-    let ativo = true;
+      // useFocusEffect roda sempre que a tela aparece, inclusive ao voltar da
+  // edição. É assim que os dados novos já surgem aqui.
+  useFocusEffect(
+    useCallback(() => {
+      let ativo = true;
 
-    setCarregando(true);
-    setErro(false);
+      setCarregando(true);
+      setErro(false);
 
-    // Não precisa de id na rota: o backend descobre o usuário pelo token
-    buscarUsuarioLogado()
-      .then((dados) => {
-        if (ativo) setUsuario(dados);
-      })
-      .catch((e) => {
-        if (!ativo) return;
+      // Não precisa de id na rota: o backend descobre o usuário pelo token
+      buscarUsuarioLogado()
+        .then((dados) => {
+          if (ativo) setUsuario(dados);
+        })
+        .catch((e) => {
+          if (!ativo) return;
 
-        // 401 = token vencido ou inválido: volta para o login
-        if (e instanceof ApiError && e.status === 401) {
-          sair();
-          return;
-        }
-        setErro(true);
-      })
-      .finally(() => {
-        if (ativo) setCarregando(false);
-      });
+          // 401 = token vencido ou inválido: volta para o login
+          if (e instanceof ApiError && e.status === 401) {
+            sair();
+            return;
+          }
+          setErro(true);
+        })
+        .finally(() => {
+          if (ativo) setCarregando(false);
+        });
 
-    return () => {
-      ativo = false;
-    };
-  }, [sair]);
+      return () => {
+        ativo = false;
+      };
+    }, [sair]),
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -75,7 +78,7 @@ export default function PerfilScreen() {
               <Pressable
                 accessibilityRole="button"
                 accessibilityLabel="Editar dados da conta"
-                onPress={() => avisarEmBreve('Editar conta')}
+                onPress={() => router.push('/usuario/editar-conta')}
               >
                 <Ionicons name="pencil-outline" size={26} color={colors.primary} />
               </Pressable>

@@ -12,7 +12,8 @@ function Navegacao() {
       <Stack.Protected guard={!!token}>        
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="pet/[id]" />
-        <Stack.Screen name="usuarios/perfil-usuario" />
+        <Stack.Screen name="usuario/perfil-usuario" />
+        <Stack.Screen name="usuario/editar-conta" />
       </Stack.Protected>
 
       {/* Telas só para quem NÃO está logada */}
