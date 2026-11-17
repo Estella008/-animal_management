@@ -45,3 +45,47 @@ class VacinaAplicada(models.Model):
 
     def __str__(self):
         return f"{self.nome} - {self.animal.nome}"
+
+class Evento(models.Model):
+    TIPOS = [
+        ("consulta", "Consulta"),
+        ("exame", "Exame"),
+        ("banho_tosa", "Banho e tosa"),
+        ("outro", "Outro"),
+    ]
+    STATUS = [
+        ("agendado", "Agendado"),
+        ("realizado", "Realizado"),
+        ("cancelado", "Cancelado"),
+    ]
+    
+    animal = models.ForeignKey(
+        "animais.Animal",
+        on_delete=models.CASCADE,
+        related_name="eventos",
+    )
+
+    tipo = models.CharField(max_length=20, choices=TIPOS)
+    status = models.CharField(max_length=20, choices=STATUS, default="agendado")
+
+    # Ex.: "Retorno da displasia", "Hemograma", "Banho mensal"
+    titulo = models.CharField(max_length=100)
+
+    data = models.DateField()
+    hora = models.TimeField(null=True, blank=True)  # opcional
+
+    local = models.CharField(max_length=150, blank=True)
+    # Quem atende: veterinário(a), tosador(a)...
+    profissional = models.CharField(max_length=100, blank=True)
+    observacoes = models.TextField(blank=True)
+
+    # Quantos dias antes o app avisa a tutora (0 = no próprio dia)
+    lembrete_dias_antes = models.PositiveSmallIntegerField(default=1)
+
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["data", "hora"]
+
+    def __str__(self):
+        return f"{self.get_tipo_display()}: {self.titulo} - {self.animal.nome} ({self.data})"

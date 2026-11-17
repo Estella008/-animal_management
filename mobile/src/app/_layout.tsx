@@ -14,12 +14,13 @@ function Navegacao() {
         <Stack.Screen name="pet/[id]" />
         <Stack.Screen name="usuario/perfil-usuario" />
         <Stack.Screen name="usuario/editar-conta" />
+        <Stack.Screen name="cadastro-vacina" />
       </Stack.Protected>
 
       {/* Telas só para quem NÃO está logada */}
       <Stack.Protected guard={!token}>
         <Stack.Screen name="login" />
-        <Stack.Screen name="cadastro-usuario" />
+        <Stack.Screen name="usuario/cadastro-usuario" />
         
       </Stack.Protected>
     </Stack>

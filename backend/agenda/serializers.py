@@ -1,7 +1,7 @@
 
 from rest_framework import serializers
 
-from .models import VacinaAplicada
+from .models import Evento, VacinaAplicada
 
 
 class VacinaAplicadaSerializer(serializers.ModelSerializer):
@@ -10,7 +10,7 @@ class VacinaAplicadaSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "animal",
-            "nome",
+            "nome"
             "laboratorio",
             "data_aplicacao",
             "frequencia",
@@ -29,3 +29,31 @@ class VacinaAplicadaSerializer(serializers.ModelSerializer):
                 "Você não pode cadastrar vacinas para este animal."
             )
         return animal
+    
+class EventoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Evento
+        fields = [
+            "id",
+            "animal",
+            "tipo",
+            "status",
+            "titulo",
+            "data",
+            "hora",
+            "local",
+            "profissional",
+            "observacoes",
+            "lembrete_dias_antes",
+            "criado_em",
+        ]
+        read_only_fields = ["id", "criado_em"]
+
+    def validate_animal(self, animal):
+        # Só a tutora dona do animal pode cadastrar eventos para ele
+        if animal.tutor_id != self.context["request"].user.id:
+            raise serializers.ValidationError(
+                "Você não pode cadastrar eventos para este animal."
+            )
+        return animal
+

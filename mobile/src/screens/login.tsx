@@ -74,7 +74,7 @@ const handleLogin = async () => {
         Alert.alert('Esqueci minha senha', 'Funcionalidade ainda não implementada.');
     }
     const handleRegister = () => {
-        router.push('/cadastro-usuario');
+        router.push('/usuario/cadastro-usuario');
     }
     
 
