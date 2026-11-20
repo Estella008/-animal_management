@@ -25,8 +25,7 @@ export type Evento = {
  * Obrigatórios: animal, tipo, titulo e data. O resto é opcional.
  */
 export type NovoEvento = Pick<Evento, 'animal' | 'tipo' | 'titulo' | 'data'> &
-  Partial<Pick<Evento, 'hora' | 'local' | 'profissional' | 'observacoes' | 'lembrete_dias_antes'>>;
-
+   Partial<Pick<Evento, 'status' | 'hora' | 'local' | 'profissional' | 'observacoes' | 'lembrete_dias_antes'>>;
 type FiltrosEvento = {
   animal?: number;
   status?: StatusEvento;

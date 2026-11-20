@@ -15,12 +15,14 @@ function Navegacao() {
         <Stack.Screen name="usuario/perfil-usuario" />
         <Stack.Screen name="usuario/editar-conta" />
         <Stack.Screen name="cadastro-vacina" />
+        <Stack.Screen name="agenda/novo-cuidado" />
       </Stack.Protected>
 
       {/* Telas só para quem NÃO está logada */}
       <Stack.Protected guard={!token}>
         <Stack.Screen name="login" />
         <Stack.Screen name="usuario/cadastro-usuario" />
+        
         
       </Stack.Protected>
     </Stack>

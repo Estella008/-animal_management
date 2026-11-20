@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { AgendaList } from '@/components/ui/agenda-list';
@@ -106,9 +106,11 @@ export default function AgendaScreen() {
     };
   }, [itens, petSelecionado, aba]);
 
-  // Por enquanto, estas ações avisam "em breve" (como as outras telas fazem).
-  // Elas serão ligadas nos próximos passos.
-  const abrirNovoCuidado = () => avisarEmBreve('Novo cuidado');
+  const abrirNovoCuidado = () =>
+    router.push({
+      pathname: '/agenda/novo-cuidado',
+      params: petSelecionado ? { animalId: String(petSelecionado) } : {},
+    });
   const abrirDetalhe = (_item: ItemAgenda) => avisarEmBreve('Detalhe do cuidado');
   const resolverAtrasado = (_item: ItemAgenda) => avisarEmBreve('Marcar como realizado');
 

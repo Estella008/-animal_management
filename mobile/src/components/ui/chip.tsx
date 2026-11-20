@@ -1,51 +1,67 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 
-import { colors, size } from '@/constants/theme';
+import { ThemedText } from '@/components/themed-text';
+import { colors, fonts, size } from '@/constants/theme';
 
 type Props = {
-  /** Obrigatório: o botão não tem texto, então o leitor de tela fala isso. */
-  accessibilityLabel: string;
+  label: string;
+  selecionado?: boolean;
   onPress: () => void;
-  icone?: keyof typeof Ionicons.glyphMap;
+  /** Algo antes do texto, ex.: a patinha do pet. Opcional. */
+  inicio?: ReactNode;
+  /**
+   * 'cheio' = selecionado fica verde com texto branco (filtro da Agenda).
+   * 'suave' = selecionado fica verde clarinho com borda (escolhas do formulário).
+   */
+  variante?: 'cheio' | 'suave';
 };
 
 /**
- * Botão redondo que "flutua" no canto da tela (o famoso FAB).
- * Ex.: o "+" da Agenda que abre o Novo cuidado.
+ * Botãozinho arredondado que pode estar selecionado ou não.
+ * Usado no filtro de pets da Agenda e nas escolhas do Novo cuidado.
  *
- * Ele usa position: 'absolute', então coloque-o FORA do ScrollView,
- * como último filho da tela. Assim ele fica parado enquanto a lista rola.
+ * Diferente do ChoiceGroup: o Chip tem a largura do próprio texto,
+ * então cabem vários numa linha que rola para o lado.
  */
-export function FloatingButton({ accessibilityLabel, onPress, icone = 'add' }: Props) {
+export function Chip({ label, selecionado = false, onPress, inicio, variante = 'cheio' }: Props) {
+  const estiloSelecionado = variante === 'cheio' ? styles.cheio : styles.suave;
+  const textoSelecionado = variante === 'cheio' ? styles.textoCheio : styles.textoSuave;
+
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={accessibilityLabel}
+      accessibilityState={{ selected: selecionado }}
       onPress={onPress}
-      style={({ pressed }) => [styles.botao, pressed && styles.pressed]}>
-      <Ionicons name={icone} size={28} color={colors.white} />
+      style={({ pressed }) => [
+        styles.chip,
+        inicio ? styles.comInicio : null,
+        selecionado && estiloSelecionado,
+        pressed && !selecionado && styles.pressed,
+      ]}>
+      {inicio}
+      <ThemedText style={[styles.texto, selecionado && textoSelecionado]}>{label}</ThemedText>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  botao: {
-    position: 'absolute',
-    right: size.xl,
-    bottom: size.xl,
-    width: 56,
-    height: 56,
-    borderRadius: size.radiusXl,
-    backgroundColor: colors.primary,
+  chip: {
+    height: size.choiceHeight,
+    paddingHorizontal: size.lg,
+    borderRadius: size.radiusPill,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    // sombra (iOS usa shadow*, Android usa elevation)
-    shadowColor: colors.primary,
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 6,
+    gap: size.xs + 2,
   },
-  pressed: { backgroundColor: colors.primaryDark },
+  comInicio: { paddingLeft: size.xs + 2 },
+  cheio: { backgroundColor: colors.primary, borderColor: colors.primary },
+  suave: { backgroundColor: colors.backgroundSelected, borderColor: colors.primary, borderWidth: 1.5 },
+  pressed: { backgroundColor: colors.backgroundSelected },
+  texto: { fontSize: size.textSm, fontWeight: fonts.medium, color: colors.text },
+  textoCheio: { color: colors.white, fontWeight: fonts.semibold },
+  textoSuave: { color: colors.primaryDark, fontWeight: fonts.semibold },
 });

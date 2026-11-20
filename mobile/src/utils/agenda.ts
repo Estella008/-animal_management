@@ -56,7 +56,28 @@ export function paraISO(data: Date): string {
 export function hojeISO(): string {
   return paraISO(new Date());
 }
+/**
+ * '21/11/2026' -> '2026-11-21'. Devolve null se a data não existir
+ * (ex.: 31/02/2026 ou 15/13/2026), não só se o formato estiver errado.
+ */
+export function dataBRparaISO(texto: string): string | null {
+  const partes = texto.split('/');
+  if (partes.length !== 3 || partes[2].length !== 4) return null;
+  const [dia, mes, ano] = partes.map(Number);
+  const data = new Date(ano, mes - 1, dia);
+  // Se o dia não existe, o JavaScript "pula" para o mês seguinte
+  // (31/02 vira 03/03). Comparando de volta, descobrimos isso.
+  const existe = data.getFullYear() === ano && data.getMonth() === mes - 1 && data.getDate() === dia;
+  return existe ? paraISO(data) : null;
+}
 
+/** '14:30' é válida; '25:00', '14:7' e '1430' não. */
+export function horaValida(texto: string): boolean {
+  const certo = /^\d{2}:\d{2}$/.test(texto);
+  if (!certo) return false;
+  const [h, m] = texto.split(':').map(Number);
+  return h <= 23 && m <= 59;
+}
 /** Diferença em dias entre duas datas 'AAAA-MM-DD' (b - a). */
 function diasEntre(a: string, b: string): number {
   const umDia = 24 * 60 * 60 * 1000;
