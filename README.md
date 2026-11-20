@@ -63,8 +63,8 @@ O foco inicial é em **cães e gatos**.
 ### 1. Clonar o repositório
 
 ```bash
-git clone https://github.com/Estella008/-animal_management.git
-cd -animal_management
+git clone https://github.com/Estella008/helpet.git
+cd helpet
 ```
 
 ### 2. Backend (Django)
