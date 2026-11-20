@@ -1,6 +1,6 @@
 import { api } from '@/services/api';
 
-export type TipoOpcao = 'raca' | 'vacina';
+export type TipoOpcao = 'raca' | 'vacina' | 'laboratorio';
 
 export type Opcao = {
   id: number;

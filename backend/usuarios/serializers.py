@@ -16,9 +16,12 @@ class CadastroSerializer(serializers.ModelSerializer):
         fields = ["nome", "email", "senha"]
 
     def validate_email(self, value):
-        email =value.strip().lower()
-        if Usuario.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+        email = value.strip().lower()
+
+        # No cadastro a conta ainda não existe, então não há o que excluir
+        if Usuario.objects.filter(email=email).exists():
             raise serializers.ValidationError("Este e-mail já está cadastrado.")
+
         return email
 
     def create(self, validated_data):
@@ -28,7 +31,18 @@ class CadastroSerializer(serializers.ModelSerializer):
             password=senha,
             **validated_data,
         )
+
+
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ["id", "nome", "email"]
+
+    def validate_email(self, value):
+        email = value.strip().lower()
+
+        # Na edição a conta já existe: o exclude ignora o próprio usuário
+        if Usuario.objects.exclude(pk=self.instance.pk).filter(email=email).exists():
+            raise serializers.ValidationError("Este e-mail já está cadastrado.")
+
+        return email
