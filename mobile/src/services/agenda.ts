@@ -1,5 +1,6 @@
 import { api } from '@/services/api';
 import type { TipoEvento } from '@/constants/tipos-cuidado';
+import type { VacinaParaAgenda } from '@/utils/agenda';
 
 export type StatusEvento = 'agendado' | 'realizado' | 'cancelado';
 
@@ -40,6 +41,13 @@ export function listarEventos(filtros: FiltrosEvento = {}) {
 
   const query = params.toString();
   return api.get<Evento[]>(`/agenda/eventos/${query ? `?${query}` : ''}`);
+}
+
+// Lista TODAS as vacinas dos pets da tutora logada (sem filtrar por pet).
+// A agenda precisa delas para mostrar as próximas doses e o histórico.
+// (O services/vacinas.ts da branch cadastroVacinas busca por um pet só.)
+export function listarVacinasDaAgenda() {
+  return api.get<VacinaParaAgenda[]>('/agenda/vacinas/');
 }
 
 // Cadastra um evento novo

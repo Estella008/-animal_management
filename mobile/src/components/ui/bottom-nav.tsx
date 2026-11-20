@@ -4,8 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { colors, fonts, size } from '@/constants/theme';
-import { Ionicons } from '@expo/vector-icons';
-import { avisarEmBreve } from '@/utils/em-breve';
 
 export function BottomNav({ state, descriptors, emitter, navigateToTab }: BottomTabBarProps) {
   return (
@@ -45,16 +43,6 @@ export function BottomNav({ state, descriptors, emitter, navigateToTab }: Bottom
 
           );
         })}
-      <Pressable
-          accessibilityRole="button"
-          accessibilityLabel="Agenda"
-          onPress={() => avisarEmBreve('Agenda')}
-          style={styles.item}>
-          <Ionicons name="calendar-outline" size={24} color={colors.text} />
-          <ThemedText numberOfLines={1} style={styles.label}>
-            Agenda
-          </ThemedText>
-        </Pressable>
       </View>
     </SafeAreaView>
   );
